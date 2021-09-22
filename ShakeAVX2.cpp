@@ -32,7 +32,7 @@ void ShakeAVX2::update(uint64_t nonce, uint64_t counter)
         data[i + 40] = (counter >> (8 * i)) & 0xff;
         data[32] = 0x1f;
     }
-    KeccakP1600_AddBytes((void*)states_, data, 48, 0);
+    KeccakP1600_AddBytes((void*)states_, data, 0, 48);
     KeccakP1600_AddByte((void*)states_, 0x80, RATE_IN_BYTE);
 
     // Permute 
