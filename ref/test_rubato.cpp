@@ -18,7 +18,7 @@ int main()
 	}
 	cout << dec << endl;
 
-	uint64_t nonce = 0x123456789abcdef;
+	uint64_t nonce = 0x121132412345;
 	uint64_t counter = 0;
 
 	Rubato cipher(key);
@@ -62,6 +62,27 @@ int main()
 	for (int i = 0; i < BLOCKSIZE; i++)
 	{
 		cout << rand_vectors[ROUNDS * BLOCKSIZE + i] << " ";
+	}
+	cout << dec << endl;
+
+	// Print round keys
+	cout << "Get round keys" << endl;
+	uint64_t round_keys[XOF_ELEMENT_COUNT];
+	cipher.get_round_keys(round_keys);
+
+	for (int r = 0; r < ROUNDS; r++)
+	{
+		cout << "  Round " << r << "  : " << hex << flush;
+		for (int i = 0; i < BLOCKSIZE; i++)
+		{
+			cout << round_keys[r * BLOCKSIZE + i] << " ";
+		}
+		cout << dec << endl;
+	}
+	cout << "  Final    : " << hex << flush;
+	for (int i = 0; i < BLOCKSIZE; i++)
+	{
+		cout << round_keys[ROUNDS * BLOCKSIZE + i] << " ";
 	}
 	cout << dec << endl;
 

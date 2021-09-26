@@ -44,9 +44,14 @@ void Rubato::get_rand_vectors(uint64_t *output)
 	memcpy(output, rand_vectors_, sizeof(uint64_t) * XOF_ELEMENT_COUNT);
 }
 
+void Rubato::get_round_keys(uint64_t *output)
+{
+	memcpy(output, round_keys_, sizeof(uint64_t) * XOF_ELEMENT_COUNT);
+}
+
 void Rubato::keyschedule()
 {
-	#if 0 // Naive rejection sampling
+	#if 1 // Naive rejection sampling
 	uint8_t buf[RATE_IN_BYTE];
 	unsigned int offset = 0;
 	unsigned int squeeze_byte = 0;
@@ -230,7 +235,6 @@ void Rubato::compute_keystream_naive(block_t out)
 			tmp[i] += round_key[i];
 			tmp[i] %= MODULUS;
 		}
-
 		// Linear layer
 		linear_layer(tmp, buf);
 
@@ -244,14 +248,13 @@ void Rubato::compute_keystream_naive(block_t out)
 		{
 			tmp[i] = (buf[i] + buf[i-1]*buf[i-1]) % MODULUS;
 		}
-
 #ifndef NDEBUG
-		cout << "  Round " << r << ": " << hex << flush;
+		cout << "[Round " << r << "]" << hex << endl;
 		for (int i = 0; i < BLOCKSIZE; i++)
 		{
-			cout << tmp[i] << " ";
+			cout << (uint32_t)(tmp[i] * 0x100000000ULL % MODULUS) << " ";
 		}
-		cout << dec << endl;
+		cout << endl;
 #endif
 	}
 

@@ -57,6 +57,8 @@ class Rubato
 
 		// Copy outputs of XOF
 		void get_rand_vectors(uint64_t *output);
+		void get_round_keys(uint64_t *output);
+
 	private:
 		// Secret key
 		block_t key_;
