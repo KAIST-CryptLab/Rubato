@@ -1,5 +1,4 @@
 #include <iostream>
-#include <iomanip>
 #include <string>
 
 #include "Rubato.h"
@@ -14,8 +13,8 @@ int main(int argc, char *argv[])
 	uint32_t key[BLOCKSIZE];
 	uint64_t nonce;
 	uint64_t counter;
+	uint32_t coeffs[XOF_ELEMENT_COUNT];
 	uint32_t keystream[OUTPUTSIZE];
-	uint8_t *arr = (uint8_t *) keystream;
 
 	for (int i = 0; i < BLOCKSIZE; i++)
 	{
@@ -27,10 +26,13 @@ int main(int argc, char *argv[])
 
 	Rubato cipher(key);
 	cipher.init(nonce, counter);
-	cipher.crypt(keystream);
+	cipher.get_coeffs(coeffs);
+	for (int i = 0; i < XOF_ELEMENT_COUNT; i++)
+		cout << coeffs[i] << " ";
+	cout << endl;
 
-	cout << setfill('0');
-	for (int i = 0; i < sizeof(keystream); i++)
-    	cout << hex << setw(2) << (int)arr[i];
+	cipher.crypt(keystream);
+	for (int i = 0; i < OUTPUTSIZE; i++)
+		cout << coeffs[i] << " ";
 	cout << endl;
 }
