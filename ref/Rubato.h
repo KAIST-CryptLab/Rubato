@@ -1,84 +1,95 @@
 #ifndef __RUBATO_H__
 #define __RUBATO_H__
 
+#include <sys/random.h>
 #include "parms.h"
-#include "ShakeAVX2.h"
+#include "xof.h"
+
+extern "C" {
+#include "util.h"
+}
+
+#define MAX_BLOCKSIZE 64
 
 using namespace std;
-
-typedef uint64_t *block_t;
-
-block_t block_init(size_t sz);
 
 class Rubato
 {
 	public:
-		Rubato(uint64_t *key)
+		Rubato(uint32_t key[BLOCKSIZE])
 		{
-			key_ = block_init(BLOCKSIZE);
-
 			for (int i = 0; i < BLOCKSIZE; i++)
 			{
-				key_[i] = key[i] % MODULUS;
+				key_[i] = key[i];
+				state_[i] = i+1;
 			}
-
-			rand_vectors_ = block_init(XOF_ELEMENT_COUNT + 8);
-			round_keys_ = block_init(XOF_ELEMENT_COUNT);
-			is_shake_init_ = false;
+			xof_coeff_ = new XOF();
+			xof_noise_ = new XOF();
+			xof_coeff_->init();
+			xof_noise_->init();
+			do {
+				rand_bytes(&seed_, 8);
+			} while (seed_ == 0);
 		}
 
 		// Destruct a Rubato instance
 		~Rubato()
 		{
-			free(key_);
-			free(rand_vectors_);
-			if (is_shake_init_)
-			{
-				delete shake_;
-			}
+			delete xof_coeff_;
+			delete xof_noise_;
 		}
 
 		// Re-keying function
-		void set_key(uint64_t *key);
+		void set_key(uint32_t key[BLOCKSIZE])
+		{
+			for (int i = 0; i < BLOCKSIZE; i++)
+			{
+				key_[i] = key[i];
+				state_[i] = i+1;
+			}
+			xof_coeff_->reset();
+			xof_noise_->reset();
+			do {
+				rand_bytes(&seed_, 8);
+			} while (seed_ != 0);
+		}
 
         /*
-        Both init and update function compute round keys from
-        extendable output function. The difference is, the init
-        function creates a new ShakeAVX2 object while the update
-        function does not.
+       Init function compute round keys from extendable output function.
 
         @param[in] nonce Distinct nonce
         @param[in] counter Counter, but may be used as an integrated nonce
-         */
+        */
 		void init(uint64_t nonce, uint64_t counter);
-		void update(uint64_t nonce, uint64_t counter);
+		void reset();
+		void crypt(uint32_t output[BLOCKSIZE]);
 
-		void compute_keystream_naive(block_t out);
-
-		// Copy outputs of XOF
-		void get_rand_vectors(uint64_t *output);
+		// for debug
+		void get_coeffs(uint64_t *output);
 		void get_round_keys(uint64_t *output);
 
 	private:
 		// Secret key
-		block_t key_;
+		alignas(32) uint64_t key_[MAX_BLOCKSIZE];
 
 		// Round constants
-		block_t rand_vectors_;
+		alignas(32) uint64_t coeffs_[(ROUNDS + 1) * MAX_BLOCKSIZE + 8];//
 
 		// Key multiplied by round constant
-		block_t round_keys_;
+		alignas(32) uint64_t round_keys_[(ROUNDS+1) * MAX_BLOCKSIZE + 8];
 
-		// Shake object
-		ShakeAVX2 *shake_;
+		// Internal state
+		alignas(32) uint64_t state_[MAX_BLOCKSIZE];
 
-		bool is_shake_init_;
+		// XOF objects
+		XOF *xof_coeff_;
+		XOF *xof_noise_;
+
+		uint64_t seed_;
 
 		// The inner key schedule function in init and update
+		void gen_coeffs();
 		void keyschedule();
-
-		// Linear Layer
-		inline void linear_layer(block_t state, block_t buf);
 };
 
 #endif
