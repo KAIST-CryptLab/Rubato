@@ -12,16 +12,25 @@ RUBATOHEADER = Rubato.h xof_aes.h xof_shake.h parms.h util.h
 
 all: rubato
 
-bench: bench_rubato.cpp $(RUBATOSOURCE) $(RUBATOHEADER) $(XKCPHEADER)
+rubato: main.cpp $(RUBATOSOURCE) $(RUBATOHEADER) $(XKCPHEADER)
 	gcc $(COPT) util.c -c -o util.o
-	$(CXX) $(CXXOPT) bench_rubato.cpp -c -o bench.o
 	$(CXX) $(CXXOPT) Rubato.cpp -c -o rubato.o
 	$(CXX) $(CXXOPT) xof_aes.cpp $(LIBOPENSSL) -c -o xof_aes.o
 	$(CXX) $(CXXOPT) xof_shake.cpp $(LIBXKCP) -c -o xof_shake.o
-	$(CXX) $(CXXOPT) bench.o rubato.o xof_aes.o xof_shake.o util.o cbd.o -o bench_rubato
-	rm -f bench.o rubato.o xof_aes.o xof_shake.o util.o cbd.o
+	$(CXX) $(CXXOPT) main.cpp -c -o main.o
+	$(CXX) $(CXXOPT) main.o rubato.o xof_aes.o xof_shake.o util.o $(LIBXKCP) $(LIBOPENSSL) -o main
+	rm -f main.o rubato.o xof_aes.o xof_shake.o util.o
 
-rubato: test_rubato.cpp $(RUBATOSOURCE) $(RUBATOHEADER) $(XKCPHEADER)
+bench: bench_rubato.cpp $(RUBATOSOURCE) $(RUBATOHEADER) $(XKCPHEADER)
+	gcc $(COPT) util.c -c -o util.o
+	$(CXX) $(CXXOPT) Rubato.cpp -c -o rubato.o
+	$(CXX) $(CXXOPT) xof_aes.cpp $(LIBOPENSSL) -c -o xof_aes.o
+	$(CXX) $(CXXOPT) xof_shake.cpp $(LIBXKCP) -c -o xof_shake.o
+	$(CXX) $(CXXOPT) bench_rubato.cpp -c -o bench.o
+	$(CXX) $(CXXOPT) bench.o rubato.o xof_aes.o xof_shake.o util.o $(LIBXKCP) $(LIBOPENSSL) -o bench_rubato
+	rm -f bench.o rubato.o xof_aes.o xof_shake.o util.o
+
+test: test_rubato.cpp $(RUBATOSOURCE) $(RUBATOHEADER) $(XKCPHEADER)
 	gcc $(COPT) util.c -c -o util.o
 	$(CXX) $(CXXOPT) Rubato.cpp -c -o rubato.o
 	$(CXX) $(CXXOPT) xof_aes.cpp $(LIBOPENSSL) -c -o xof_aes.o
