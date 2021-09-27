@@ -9,6 +9,9 @@ using namespace std;
 int main()
 {
 	uint32_t key[BLOCKSIZE];
+	uint64_t nonce = 0x01234566789abcdef;
+	uint64_t counter = 0;
+	uint32_t keystream[OUTPUTSIZE];
 	for (int i = 0; i < BLOCKSIZE; i++)
 	{
 		key[i] = i + 1;
@@ -20,10 +23,6 @@ int main()
 		cout << hex << key[i] << " ";
 	}
 	cout << dec << endl;
-
-    uint32_t keystream[BLOCKSIZE];
-	uint64_t nonce = 0x121132412345;
-	uint64_t counter = 0;
 
 	Rubato cipher(key);
 	cout << "Bench Start" << endl;
