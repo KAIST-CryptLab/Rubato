@@ -11,10 +11,15 @@
 #define PARAM_128_L 5
 
 #define XOF_AES 0
-#define XOF_SHAKE 1
+#define XOF_SHAKE128 1
+#define XOF_SHAKE256 2
 
-#define PARAM_ID PARAM_80_L
-#define XOF_TYPE XOF_AES
+#ifndef PARAM_ID
+    #define PARAM_ID PARAM_80_L
+#endif
+#ifndef XOF_TYPE
+    #define XOF_TYPE XOF_AES
+#endif
 
 alignas(32) static const uint32_t CDF_TABLE_80_S[29*8] = {
     193466994, 193466994, 193466994, 193466994, 193466994, 193466994, 193466994, 193466994,
@@ -116,14 +121,14 @@ static const uint32_t CDF_TABLE_128_ML[11*8] = {
     #define BLOCKSIZE 16
     #define OUTPUTSIZE 12
     #define ROUNDS 2
-    #define Q 0xffa0001ULL
-    #define Q_BIT_MASK 0xfffffffULL
+    #define Q 0x7e00001ULL
+    #define Q_BIT_MASK 0x7ffffffULL
     #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
 
     #define R 0x100000000ULL
-    #define R2_MOD_Q 0x907c029ULL
-    #define Qbar_MOD_R 0xff9ffffULL
-    #define RINV_MOD_Q 0xff4024ULL
+    #define R2_MOD_Q 0x217e39fULL
+    #define Qbar_MOD_R 0x7dfffffULL
+    #define RINV_MOD_Q 0x3e0400ULL
 
     #define CDF_TABLE_LEN 29
     #define CDF_TABLE CDF_TABLE_80_S
@@ -131,18 +136,63 @@ static const uint32_t CDF_TABLE_128_ML[11*8] = {
     #define BLOCKSIZE 36
     #define OUTPUTSIZE 32
     #define ROUNDS 2
-    #define Q 0x3ee0001ULL
-    #define Q_BIT_MASK 0x3ffffffULL
+    #define Q 0x1fc0001ULL
+    #define Q_BIT_MASK 0x1ffffffULL
     #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
 
     #define R 0x100000000ULL
-    #define R2_MOD_Q 0x2b2e03bULL
-    #define Qbar_MOD_R 0x3edffffULL
-    #define RINV_MOD_Q 0xf7144ULL
+    #define R2_MOD_Q 0x3038f3ULL
+    #define Qbar_MOD_R 0x1fbffffULL
+    #define RINV_MOD_Q 0x3f010ULL
 
     #define CDF_TABLE_LEN 8
     #define CDF_TABLE CDF_TABLE_80_M
 #elif PARAM_ID == PARAM_80_L
+    #define BLOCKSIZE 64
+    #define OUTPUTSIZE 60
+    #define ROUNDS 2
+    #define Q 0xfc0001ULL
+    #define Q_BIT_MASK 0xffffffULL
+    #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
+
+    #define R 0x100000000ULL
+    #define R2_MOD_Q 0x3c0421ULL
+    #define Qbar_MOD_R 0xfbffffULL
+    #define RINV_MOD_Q 0xf810ULL
+
+    #define CDF_TABLE_LEN 5
+    #define CDF_TABLE CDF_TABLE_80_L
+#elif PARAM_ID == PARAM_128_S
+    #define BLOCKSIZE 16
+    #define OUTPUTSIZE 12
+    #define ROUNDS 5
+    #define Q 0x7e00001ULL
+    #define Q_BIT_MASK 0x7ffffffULL
+    #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
+
+    #define R 0x100000000ULL
+    #define R2_MOD_Q 0x217e39fULL
+    #define Qbar_MOD_R 0x7dfffffULL
+    #define RINV_MOD_Q 0x3e0400ULL
+
+    #define CDF_TABLE_LEN 28
+    #define CDF_TABLE CDF_TABLE_128_S
+#elif PARAM_ID == PARAM_128_M
+    #define BLOCKSIZE 36
+    #define OUTPUTSIZE 32
+    #define ROUNDS 3
+    #define Q 0x1fc0001ULL
+    #define Q_BIT_MASK 0x1ffffffULL
+    #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
+
+    #define R 0x100000000ULL
+    #define R2_MOD_Q 0x3038f3ULL
+    #define Qbar_MOD_R 0x1fbffffULL
+    #define RINV_MOD_Q 0x3f010ULL
+
+    #define CDF_TABLE_LEN 11
+    #define CDF_TABLE CDF_TABLE_128_ML
+#elif PARAM_ID == PARAM_128_L
     #define BLOCKSIZE 64
     #define OUTPUTSIZE 60
     #define ROUNDS 2
@@ -155,56 +205,14 @@ static const uint32_t CDF_TABLE_128_ML[11*8] = {
     #define Qbar_MOD_R 0x1fbffffULL
     #define RINV_MOD_Q 0x3f010ULL
 
-    #define CDF_TABLE_LEN 5
-    #define CDF_TABLE CDF_TABLE_80_L
-#elif PARAM_ID == PARAM_128_S
-    #define BLOCKSIZE 16
-    #define OUTPUTSIZE 12
-    #define ROUNDS 5
-    #define Q 0xffa0001ULL
-    #define Q_BIT_MASK 0xfffffffULL
-    #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
-
-    #define R 0x100000000ULL
-    #define R2_MOD_Q 0x907c029ULL
-    #define Qbar_MOD_R 0xff9ffffULL
-    #define RINV_MOD_Q 0xff4024ULL
-    
-    #define CDF_TABLE_LEN 28
-    #define CDF_TABLE CDF_TABLE_128_S
-#elif PARAM_ID == PARAM_128_M
-    #define BLOCKSIZE 36
-    #define OUTPUTSIZE 32
-    #define ROUNDS 3
-    #define Q 0x3ee0001ULL
-    #define Q_BIT_MASK 0x3ffffffULL
-    #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
-
-    #define R 0x100000000ULL
-    #define R2_MOD_Q 0x2b2e03bULL
-    #define Qbar_MOD_R 0x3edffffULL
-    #define RINV_MOD_Q 0xf7144ULL
-
-    #define CDF_TABLE_LEN 11
-    #define CDF_TABLE CDF_TABLE_128_ML
-#elif PARAM_ID == PARAM_128_L
-    #define BLOCKSIZE 64
-    #define OUTPUTSIZE 60
-    #define ROUNDS 2
-    #define Q 0x3ee0001ULL
-    #define Q_BIT_MASK 0x3ffffffULL
-    #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
-
-    #define R 0x100000000ULL
-    #define R2_MOD_Q 0x2b2e03bULL
-    #define Qbar_MOD_R 0x3edffffULL
-    #define RINV_MOD_Q 0xf7144ULL
-
     #define CDF_TABLE_LEN 11
     #define CDF_TABLE CDF_TABLE_128_ML
 #endif
 
-#if XOF_TYPE == XOF_SHAKE
+#if XOF_TYPE == XOF_SHAKE256
+    #define XOF Shake
+    #define RATE_IN_BYTE 136
+#elif XOF_TYPE == XOF_SHAKE128
     #define XOF Shake
     #define RATE_IN_BYTE 168
 #elif XOF_TYPE == XOF_AES

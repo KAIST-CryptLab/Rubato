@@ -7,8 +7,11 @@ extern "C" {
 #include "util.h"
 }
 #include "parms.h"
-#include "xof_shake.h"
-#include "xof_aes.h"
+#if XOF_TYPE == XOF_AES
+    #include "xof_aes.h"
+#else
+    #include "xof_shake.h"
+#endif
 
 #define MAX_BLOCKSIZE 64
 

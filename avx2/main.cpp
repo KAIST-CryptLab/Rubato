@@ -16,13 +16,19 @@ int main(int argc, char *argv[])
 	uint32_t coeffs[XOF_ELEMENT_COUNT];
 	uint32_t keystream[OUTPUTSIZE];
 
+      if (argc != 3)
+      {
+          cout << "Usage : " << argv[0] << " [nonce] [counter]" << endl;
+          exit(0);
+      }
+
 	for (int i = 0; i < BLOCKSIZE; i++)
 	{
 		key[i] = i + 1;
 	}
 
-	nonce = stoi(argv[1]);
-	counter = stoi(argv[2]);
+	nonce = stoull(argv[1]);
+	counter = stoull(argv[2]);
 
 	Rubato cipher(key);
 	cipher.init(nonce, counter);
@@ -33,6 +39,6 @@ int main(int argc, char *argv[])
 
 	cipher.crypt(keystream);
 	for (int i = 0; i < OUTPUTSIZE; i++)
-		cout << coeffs[i] << " ";
+		cout << keystream[i] << " ";
 	cout << endl;
 }

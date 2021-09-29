@@ -31,7 +31,10 @@ void XoAES::reset()
 void XoAES::absorb_once(const uint8_t *in, size_t inlen)
 {
     alignas(32) uint8_t iv[16] = {0,};
-    memcpy(iv, in+16, MIN(16, inlen-16));
+    if (inlen != 16 && inlen != 32)
+        abort();
+
+    memcpy(iv, in+16, inlen-16);
 
     EVP_EncryptInit_ex(ctx_, EVP_aes_128_ctr(), NULL, in, iv);
     EVP_CIPHER_CTX_set_padding(ctx_, 0);

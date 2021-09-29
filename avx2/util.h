@@ -15,11 +15,11 @@ static double CYCLES_PER_ITER;
 #define CLOCK_END() {NCLOCKS = RDTSC_END() - NCLOCKS;}
 #else
   #ifndef REPEAT
-  #define REPEAT 4096
-  #endif
+  #define REPEAT 65536
+#endif
 
   #ifndef OUTER_REPEAT
-  #define OUTER_REPEAT 30
+  #define OUTER_REPEAT 32
   #endif
 
   #ifndef WARMUP
