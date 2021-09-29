@@ -2,8 +2,8 @@ XKCPPATH = XKCP_AVX2
 XKCPHEADERPATH = $(XKCPPATH)/libXKCP.a.headers
 XKCPHEADER = $(XKCPHEADERPATH)/KeccakP-1600-SnP.h
 
-COPT = -O2 -march=native
-CXXOPT = -O2 -march=native -I$(XKCPHEADERPATH) -std=c++17 -g
+COPT = -O3 -march=native
+CXXOPT = -O3 -march=native -I$(XKCPHEADERPATH) -std=c++17
 LIBXKCP = -L$(XKCPPATH) -lXKCP
 LIBOPENSSL = -lcrypto -lssl
 
