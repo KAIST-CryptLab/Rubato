@@ -159,6 +159,9 @@ static const uint32_t CDF_TABLE_128_ML[11*8] = {
     #define R2_MOD_Q 0x3038f3ULL
     #define Qbar_MOD_R 0x1fbffffULL
     #define RINV_MOD_Q 0x3f010ULL
+
+    #define CDF_TABLE_LEN 5
+    #define CDF_TABLE CDF_TABLE_80_L
 #elif PARAM_ID == PARAM_128_S
     #define BLOCKSIZE 16
     #define OUTPUTSIZE 12
@@ -171,6 +174,9 @@ static const uint32_t CDF_TABLE_128_ML[11*8] = {
     #define R2_MOD_Q 0x2b2e03bULL
     #define Qbar_MOD_R 0x3edffffULL
     #define RINV_MOD_Q 0xf7144ULL
+
+    #define CDF_TABLE_LEN 28
+    #define CDF_TABLE CDF_TABLE_128_S
 #elif PARAM_ID == PARAM_128_M
     #define BLOCKSIZE 36
     #define OUTPUTSIZE 32
