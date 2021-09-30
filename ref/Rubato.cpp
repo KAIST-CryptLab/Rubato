@@ -18,6 +18,20 @@ void dump_state36(uint64_t *tmp)
 	puts("");
 }
 
+void dump_state64(uint64_t *tmp)
+{
+	for (int row = 0; row < 8; row++)
+	{
+		uint32_t ptr[8];
+		for (int col = 0; col < 8; col++)
+		{
+			ptr[col] = tmp[8 * row + col] * R % Q;
+		}
+		printf("[%08x %08x %08x %08x %08x %08x %08x %08x]\n", ptr[0], ptr[1], ptr[2], ptr[3], ptr[4], ptr[5], ptr[6], ptr[7]);
+	}
+	puts("");
+}
+
 void linear_layer(uint64_t* state, uint64_t* buf)
 {
 #if BLOCKSIZE == 16

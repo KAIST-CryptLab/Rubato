@@ -35,7 +35,7 @@ static double CYCLES_PER_ITER;
   for (int RDTSC_OUTER_ITER = 0; RDTSC_OUTER_ITER < OUTER_REPEAT; RDTSC_OUTER_ITER++) \
   {                                                                                   \
       uint64_t RDTSC_TEMP_CLK = RDTSC_START();                                        \
-      for (RDTSC_BENCH_ITER = 0; RDTSC_BENCH_ITER < REPEAT; RDTSC_BENCH_ITER++)       \
+      for (int RDTSC_BENCH_ITER = 0; RDTSC_BENCH_ITER < REPEAT; RDTSC_BENCH_ITER++)   \
       {                                                                               \
           {x};                                                                        \
       }                                                                               \
