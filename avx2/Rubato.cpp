@@ -1401,6 +1401,7 @@ void Rubato::keyschedule_b64()
 
 void Rubato::crypt_b16(uint32_t output[OUTPUTSIZE])
 {
+    const __m256i zero = _mm256_setzero_si256();
     const __m256i rot32 = _mm256_set_epi32(6, 5, 4, 3, 2, 1, 0, 7);
     const __m256i fmask = _mm256_set_epi32(-1, -1, -1, -1, -1, -1, -1, 0);
     const __m256i lomask = _mm256_set_epi32(0, -1, 0, -1, 0, -1, 0, -1);
@@ -1707,28 +1708,28 @@ void Rubato::crypt_b16(uint32_t output[OUTPUTSIZE])
 
     s0 = _mm256_add_epi32(s0, *(__m256i *)noise_);
     s1 = _mm256_add_epi32(s1, *(__m256i *)(noise_+8));
-    
+
     // Reduction
-    u0 = _mm256_max_epu32(s0, mod1q);
-    u1 = _mm256_max_epu32(s1, mod1q);
-
-    u0 = _mm256_cmpeq_epi32(s0, u0);
-    u1 = _mm256_cmpeq_epi32(s1, u1);
-
-    s0 = _mm256_and_si256(mod1q, s0);
-    s1 = _mm256_and_si256(mod1q, s1);
-
-    s0 = _mm256_sub_epi32(s0, u0);
-    s1 = _mm256_sub_epi32(s1, u1);
-
-    u0 = _mm256_cmpgt_epi32(mod1q, s0);
-    u1 = _mm256_cmpgt_epi32(mod1q, s1);
+    u0 = _mm256_cmpgt_epi32(zero, s0);
+    u1 = _mm256_cmpgt_epi32(zero, s1);
 
     u0 = _mm256_and_si256(mod1q, u0);
     u1 = _mm256_and_si256(mod1q, u1);
 
     s0 = _mm256_add_epi32(s0, u0);
     s1 = _mm256_add_epi32(s1, u1);
+
+    u0 = _mm256_max_epu32(s0, mod1q);
+    u1 = _mm256_max_epu32(s1, mod1q);
+
+    u0 = _mm256_cmpeq_epi32(s0, u0);
+    u1 = _mm256_cmpeq_epi32(s1, u1);
+
+    u0 = _mm256_and_si256(mod1q, u0);
+    u1 = _mm256_and_si256(mod1q, u1);
+
+    s0 = _mm256_sub_epi32(s0, u0);
+    s1 = _mm256_sub_epi32(s1, u1);
 
     _mm256_store_si256((__m256i *)buf, s0);
     _mm256_store_si256((__m256i *)(buf + 8), s1);
@@ -1738,6 +1739,7 @@ void Rubato::crypt_b16(uint32_t output[OUTPUTSIZE])
 
 void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
 {
+    const __m256i zero = _mm256_setzero_si256();
     const __m256i rot32 = _mm256_set_epi32(7, 6, 4, 3, 2, 1, 0, 5);
     const __m256i fmask = _mm256_set_epi32(-1, -1, -1, -1, -1, -1, -1, 0);
     const __m256i lomask32 = _mm256_set_epi32(0, -1, 0, -1, 0, -1, 0, -1);
@@ -1754,7 +1756,7 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
     __m256i u0, u1, u2, u3, u4, u5, v0, v1, v2, v3, v4, v5, s;
     __m256i* rk = (__m256i *)round_keys_;
 
-    u0 = _mm256_load_si256((__m256i *)state_);	
+    u0 = _mm256_load_si256((__m256i *)state_);
     u1 = _mm256_load_si256((__m256i *)(state_ + 8));
     u2 = _mm256_load_si256((__m256i *)(state_ + 16));
     u3 = _mm256_load_si256((__m256i *)(state_ + 24));
@@ -1928,7 +1930,16 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
     v1 = _mm256_loadu_si256((__m256i *)(noise_+6));
     u0 = _mm256_add_epi32(v0, u0);
     u1 = _mm256_add_epi32(v1, u1);
-    
+
+    v0 = _mm256_cmpgt_epi32(zero, u0);
+    v1 = _mm256_cmpgt_epi32(zero, u1);
+
+    v0 = _mm256_and_si256(mod1q, v0);
+    v1 = _mm256_and_si256(mod1q, v1);
+
+    u0 = _mm256_add_epi32(u0, v0);
+    u1 = _mm256_add_epi32(u1, v1);
+
     v0 = _mm256_max_epu32(u0, mod1q);
     v1 = _mm256_max_epu32(u1, mod1q);
 
@@ -1940,15 +1951,6 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
 
     u0 = _mm256_sub_epi32(u0, v0);
     u1 = _mm256_sub_epi32(u1, v1);
-
-    v0 = _mm256_cmpgt_epi32(mod1q, u0);
-    v1 = _mm256_cmpgt_epi32(mod1q, u1);
-
-    v0 = _mm256_and_si256(mod1q, v0);
-    v1 = _mm256_and_si256(mod1q, v1);
-
-    u0 = _mm256_add_epi32(u0, v0);
-    u1 = _mm256_add_epi32(u1, v1);
 
     _mm256_storeu_si256((__m256i *)bufs, u0);
     _mm256_storeu_si256((__m256i *)(bufs+6), u1);
@@ -1969,7 +1971,16 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
     v1 = _mm256_loadu_si256((__m256i *)(noise_+18));
     u0 = _mm256_add_epi32(v0, u0);
     u1 = _mm256_add_epi32(v1, u1);
-    
+
+    v0 = _mm256_cmpgt_epi32(zero, u0);
+    v1 = _mm256_cmpgt_epi32(zero, u1);
+
+    v0 = _mm256_and_si256(mod1q, v0);
+    v1 = _mm256_and_si256(mod1q, v1);
+
+    u0 = _mm256_add_epi32(u0, v0);
+    u1 = _mm256_add_epi32(u1, v1);
+
     v0 = _mm256_max_epu32(u0, mod1q);
     v1 = _mm256_max_epu32(u1, mod1q);
 
@@ -1981,15 +1992,6 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
 
     u0 = _mm256_sub_epi32(u0, v0);
     u1 = _mm256_sub_epi32(u1, v1);
-
-    v0 = _mm256_cmpgt_epi32(mod1q, u0);
-    v1 = _mm256_cmpgt_epi32(mod1q, u1);
-
-    v0 = _mm256_and_si256(mod1q, v0);
-    v1 = _mm256_and_si256(mod1q, v1);
-
-    u0 = _mm256_add_epi32(u0, v0);
-    u1 = _mm256_add_epi32(u1, v1);
 
     _mm256_storeu_si256((__m256i *)(bufs+12), u0);
     _mm256_storeu_si256((__m256i *)(bufs+18), u1);
@@ -2010,7 +2012,16 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
     v1 = _mm256_loadu_si256((__m256i *)(noise_+30));
     u0 = _mm256_add_epi32(v0, u0);
     u1 = _mm256_add_epi32(v1, u1);
-    
+
+    v0 = _mm256_cmpgt_epi32(zero, u0);
+    v1 = _mm256_cmpgt_epi32(zero, u1);
+
+    v0 = _mm256_and_si256(mod1q, v0);
+    v1 = _mm256_and_si256(mod1q, v1);
+
+    u0 = _mm256_add_epi32(u0, v0);
+    u1 = _mm256_add_epi32(u1, v1);
+
     v0 = _mm256_max_epu32(u0, mod1q);
     v1 = _mm256_max_epu32(u1, mod1q);
 
@@ -2023,15 +2034,6 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
     u0 = _mm256_sub_epi32(u0, v0);
     u1 = _mm256_sub_epi32(u1, v1);
 
-    v0 = _mm256_cmpgt_epi32(mod1q, u0);
-    v1 = _mm256_cmpgt_epi32(mod1q, u1);
-
-    v0 = _mm256_and_si256(mod1q, v0);
-    v1 = _mm256_and_si256(mod1q, v1);
-
-    u0 = _mm256_add_epi32(u0, v0);
-    u1 = _mm256_add_epi32(u1, v1);
-
     _mm256_storeu_si256((__m256i *)(bufs+24), u0);
     _mm256_storeu_si256((__m256i *)(bufs+30), u1);
 
@@ -2040,6 +2042,7 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
 
 void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
 {
+    const __m256i zero = _mm256_setzero_si256();
     const __m256i rot32 = _mm256_set_epi32(6, 5, 4, 3, 2, 1, 0, 7);
     const __m256i fmask = _mm256_set_epi32(-1, -1, -1, -1, -1, -1, -1, 0);
     const __m256i lomask32 = _mm256_set_epi32(0, -1, 0, -1, 0, -1, 0, -1);
@@ -2295,7 +2298,16 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
     mred_b16(u0, u2, u1, u3, &u0, &u1);
     u0 = _mm256_add_epi32(u0, *(__m256i *)(noise_+0));
     u1 = _mm256_add_epi32(u1, *(__m256i *)(noise_+8));
-    
+
+    v0 = _mm256_cmpgt_epi32(zero, u0);
+    v1 = _mm256_cmpgt_epi32(zero, u1);
+
+    v0 = _mm256_and_si256(mod1q, v0);
+    v1 = _mm256_and_si256(mod1q, v1);
+
+    u0 = _mm256_add_epi32(u0, v0);
+    u1 = _mm256_add_epi32(u1, v1);
+
     v0 = _mm256_max_epu32(u0, mod1q);
     v1 = _mm256_max_epu32(u1, mod1q);
 
@@ -2307,15 +2319,6 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
 
     u0 = _mm256_sub_epi32(u0, v0);
     u1 = _mm256_sub_epi32(u1, v1);
-
-    v0 = _mm256_cmpgt_epi32(mod1q, u0);
-    v1 = _mm256_cmpgt_epi32(mod1q, u1);
-
-    v0 = _mm256_and_si256(mod1q, v0);
-    v1 = _mm256_and_si256(mod1q, v1);
-
-    u0 = _mm256_add_epi32(u0, v0);
-    u1 = _mm256_add_epi32(u1, v1);
 
     _mm256_store_si256(bufs, u0);
     _mm256_store_si256(bufs+1, u1);
@@ -2334,7 +2337,16 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
     mred_b16(u0, u2, u1, u3, &u0, &u1);
     u0 = _mm256_add_epi32(u0, *(__m256i *)(noise_+16));
     u1 = _mm256_add_epi32(u1, *(__m256i *)(noise_+24));
-    
+
+    v0 = _mm256_cmpgt_epi32(zero, u0);
+    v1 = _mm256_cmpgt_epi32(zero, u1);
+
+    v0 = _mm256_and_si256(mod1q, v0);
+    v1 = _mm256_and_si256(mod1q, v1);
+
+    u0 = _mm256_add_epi32(u0, v0);
+    u1 = _mm256_add_epi32(u1, v1);
+
     v0 = _mm256_max_epu32(u0, mod1q);
     v1 = _mm256_max_epu32(u1, mod1q);
 
@@ -2346,15 +2358,6 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
 
     u0 = _mm256_sub_epi32(u0, v0);
     u1 = _mm256_sub_epi32(u1, v1);
-
-    v0 = _mm256_cmpgt_epi32(mod1q, u0);
-    v1 = _mm256_cmpgt_epi32(mod1q, u1);
-
-    v0 = _mm256_and_si256(mod1q, v0);
-    v1 = _mm256_and_si256(mod1q, v1);
-
-    u0 = _mm256_add_epi32(u0, v0);
-    u1 = _mm256_add_epi32(u1, v1);
 
     _mm256_store_si256(bufs+2, u0);
     _mm256_store_si256(bufs+3, u1);
@@ -2373,7 +2376,16 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
     mred_b16(u0, u2, u1, u3, &u0, &u1);
     u0 = _mm256_add_epi32(u0, *(__m256i *)(noise_+32));
     u1 = _mm256_add_epi32(u1, *(__m256i *)(noise_+40));
-    
+
+    v0 = _mm256_cmpgt_epi32(zero, u0);
+    v1 = _mm256_cmpgt_epi32(zero, u1);
+
+    v0 = _mm256_and_si256(mod1q, v0);
+    v1 = _mm256_and_si256(mod1q, v1);
+
+    u0 = _mm256_add_epi32(u0, v0);
+    u1 = _mm256_add_epi32(u1, v1);
+
     v0 = _mm256_max_epu32(u0, mod1q);
     v1 = _mm256_max_epu32(u1, mod1q);
 
@@ -2385,15 +2397,6 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
 
     u0 = _mm256_sub_epi32(u0, v0);
     u1 = _mm256_sub_epi32(u1, v1);
-
-    v0 = _mm256_cmpgt_epi32(mod1q, u0);
-    v1 = _mm256_cmpgt_epi32(mod1q, u1);
-
-    v0 = _mm256_and_si256(mod1q, v0);
-    v1 = _mm256_and_si256(mod1q, v1);
-
-    u0 = _mm256_add_epi32(u0, v0);
-    u1 = _mm256_add_epi32(u1, v1);
 
     _mm256_store_si256(bufs+4, u0);
     _mm256_store_si256(bufs+5, u1);
@@ -2412,7 +2415,16 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
     mred_b16(u0, u2, u1, u3, &u0, &u1);
     u0 = _mm256_add_epi32(u0, *(__m256i *)(noise_+48));
     u1 = _mm256_add_epi32(u1, *(__m256i *)(noise_+56));
-    
+
+    v0 = _mm256_cmpgt_epi32(zero, u0);
+    v1 = _mm256_cmpgt_epi32(zero, u1);
+
+    v0 = _mm256_and_si256(mod1q, v0);
+    v1 = _mm256_and_si256(mod1q, v1);
+
+    u0 = _mm256_add_epi32(u0, v0);
+    u1 = _mm256_add_epi32(u1, v1);
+
     v0 = _mm256_max_epu32(u0, mod1q);
     v1 = _mm256_max_epu32(u1, mod1q);
 
@@ -2424,15 +2436,6 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
 
     u0 = _mm256_sub_epi32(u0, v0);
     u1 = _mm256_sub_epi32(u1, v1);
-
-    v0 = _mm256_cmpgt_epi32(mod1q, u0);
-    v1 = _mm256_cmpgt_epi32(mod1q, u1);
-
-    v0 = _mm256_and_si256(mod1q, v0);
-    v1 = _mm256_and_si256(mod1q, v1);
-
-    u0 = _mm256_add_epi32(u0, v0);
-    u1 = _mm256_add_epi32(u1, v1);
 
     _mm256_store_si256(bufs+6, u0);
     _mm256_store_si256(bufs+7, u1);
