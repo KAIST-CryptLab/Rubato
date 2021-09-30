@@ -9,7 +9,7 @@ LIBOPENSSL = -lcrypto -lssl
 
 CPUNUM=2
 
-all: main
+all: gen
 
 bench: bench_rubato.cpp Rubato.cpp util.o parms.h xof_aes.cpp xof_shake.cpp
 	for XOF in 0 ; do\
@@ -35,12 +35,11 @@ bench: bench_rubato.cpp Rubato.cpp util.o parms.h xof_aes.cpp xof_shake.cpp
 		done ;\
 	done
 
-main: main.cpp util.o Rubato.cpp parms.h xof_aes.cpp xof_shake.cpp
-	$(CXX) $(CXXOPT) main.cpp -c -o main.o
-	$(CXX) $(CXXOPT) Rubato.cpp -c -o rubato.o
+gen: gen.cpp util.o parms.h xof_aes.cpp xof_shake.cpp xof_aes.h xof_shake.h
+	$(CXX) $(CXXOPT) gen.cpp -c -o gen.o
 	$(CXX) $(CXXOPT) xof_aes.cpp $(LIBOPENSSL) -c -o xof_aes.o
 	$(CXX) $(CXXOPT) xof_shake.cpp $(LIBXKCP) -c -o xof_shake.o
-	$(CXX) $(CXXOPT) main.o util.o rubato.o xof_aes.o xof_shake.o $(LIBXKCP) $(LIBOPENSSL) -o main
+	$(CXX) $(CXXOPT) gen.o util.o xof_aes.o xof_shake.o $(LIBXKCP) $(LIBOPENSSL) -o gen
 
 test: main.cpp util.o Rubato.cpp parms.h xof_aes.cpp xof_shake.cpp
 	$(CXX) $(CXXOPT) test_rubato.cpp -c -o test.o
