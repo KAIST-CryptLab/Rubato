@@ -1709,11 +1709,14 @@ void Rubato::crypt_b16(uint32_t output[OUTPUTSIZE])
     s1 = _mm256_add_epi32(s1, *(__m256i *)(noise_+8));
     
     // Reduction
-    u0 = _mm256_cmpgt_epi32(s0, mod1q);
-    u1 = _mm256_cmpgt_epi32(s1, mod1q);
+    u0 = _mm256_max_epu32(s0, mod1q);
+    u1 = _mm256_max_epu32(s1, mod1q);
 
-    u0 = _mm256_and_si256(mod1q, u0);
-    u1 = _mm256_and_si256(mod1q, u1);
+    u0 = _mm256_cmpeq_epi32(s0, u0);
+    u1 = _mm256_cmpeq_epi32(s1, u1);
+
+    s0 = _mm256_and_si256(mod1q, s0);
+    s1 = _mm256_and_si256(mod1q, s1);
 
     s0 = _mm256_sub_epi32(s0, u0);
     s1 = _mm256_sub_epi32(s1, u1);
@@ -1925,9 +1928,12 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
     v1 = _mm256_loadu_si256((__m256i *)(noise_+6));
     u0 = _mm256_add_epi32(v0, u0);
     u1 = _mm256_add_epi32(v1, u1);
+    
+    v0 = _mm256_max_epu32(u0, mod1q);
+    v1 = _mm256_max_epu32(u1, mod1q);
 
-    v0 = _mm256_cmpgt_epi32(u0, mod1q);
-    v1 = _mm256_cmpgt_epi32(u1, mod1q);
+    v0 = _mm256_cmpeq_epi32(u0, v0);
+    v1 = _mm256_cmpeq_epi32(u1, v1);
 
     v0 = _mm256_and_si256(mod1q, v0);
     v1 = _mm256_and_si256(mod1q, v1);
@@ -1963,9 +1969,12 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
     v1 = _mm256_loadu_si256((__m256i *)(noise_+18));
     u0 = _mm256_add_epi32(v0, u0);
     u1 = _mm256_add_epi32(v1, u1);
+    
+    v0 = _mm256_max_epu32(u0, mod1q);
+    v1 = _mm256_max_epu32(u1, mod1q);
 
-    v0 = _mm256_cmpgt_epi32(u0, mod1q);
-    v1 = _mm256_cmpgt_epi32(u1, mod1q);
+    v0 = _mm256_cmpeq_epi32(u0, v0);
+    v1 = _mm256_cmpeq_epi32(u1, v1);
 
     v0 = _mm256_and_si256(mod1q, v0);
     v1 = _mm256_and_si256(mod1q, v1);
@@ -2002,8 +2011,11 @@ void Rubato::crypt_b36(uint32_t output[BLOCKSIZE])
     u0 = _mm256_add_epi32(v0, u0);
     u1 = _mm256_add_epi32(v1, u1);
     
-    v0 = _mm256_cmpgt_epi32(u0, mod1q);
-    v1 = _mm256_cmpgt_epi32(u1, mod1q);
+    v0 = _mm256_max_epu32(u0, mod1q);
+    v1 = _mm256_max_epu32(u1, mod1q);
+
+    v0 = _mm256_cmpeq_epi32(u0, v0);
+    v1 = _mm256_cmpeq_epi32(u1, v1);
 
     v0 = _mm256_and_si256(mod1q, v0);
     v1 = _mm256_and_si256(mod1q, v1);
@@ -2283,9 +2295,12 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
     mred_b16(u0, u2, u1, u3, &u0, &u1);
     u0 = _mm256_add_epi32(u0, *(__m256i *)(noise_+0));
     u1 = _mm256_add_epi32(u1, *(__m256i *)(noise_+8));
+    
+    v0 = _mm256_max_epu32(u0, mod1q);
+    v1 = _mm256_max_epu32(u1, mod1q);
 
-    v0 = _mm256_cmpgt_epi32(u0, mod1q);
-    v1 = _mm256_cmpgt_epi32(u1, mod1q);
+    v0 = _mm256_cmpeq_epi32(u0, v0);
+    v1 = _mm256_cmpeq_epi32(u1, v1);
 
     v0 = _mm256_and_si256(mod1q, v0);
     v1 = _mm256_and_si256(mod1q, v1);
@@ -2320,8 +2335,11 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
     u0 = _mm256_add_epi32(u0, *(__m256i *)(noise_+16));
     u1 = _mm256_add_epi32(u1, *(__m256i *)(noise_+24));
     
-    v0 = _mm256_cmpgt_epi32(u0, mod1q);
-    v1 = _mm256_cmpgt_epi32(u1, mod1q);
+    v0 = _mm256_max_epu32(u0, mod1q);
+    v1 = _mm256_max_epu32(u1, mod1q);
+
+    v0 = _mm256_cmpeq_epi32(u0, v0);
+    v1 = _mm256_cmpeq_epi32(u1, v1);
 
     v0 = _mm256_and_si256(mod1q, v0);
     v1 = _mm256_and_si256(mod1q, v1);
@@ -2356,8 +2374,11 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
     u0 = _mm256_add_epi32(u0, *(__m256i *)(noise_+32));
     u1 = _mm256_add_epi32(u1, *(__m256i *)(noise_+40));
     
-    v0 = _mm256_cmpgt_epi32(u0, mod1q);
-    v1 = _mm256_cmpgt_epi32(u1, mod1q);
+    v0 = _mm256_max_epu32(u0, mod1q);
+    v1 = _mm256_max_epu32(u1, mod1q);
+
+    v0 = _mm256_cmpeq_epi32(u0, v0);
+    v1 = _mm256_cmpeq_epi32(u1, v1);
 
     v0 = _mm256_and_si256(mod1q, v0);
     v1 = _mm256_and_si256(mod1q, v1);
@@ -2392,8 +2413,11 @@ void Rubato::crypt_b64(uint32_t output[BLOCKSIZE])
     u0 = _mm256_add_epi32(u0, *(__m256i *)(noise_+48));
     u1 = _mm256_add_epi32(u1, *(__m256i *)(noise_+56));
     
-    v0 = _mm256_cmpgt_epi32(u0, mod1q);
-    v1 = _mm256_cmpgt_epi32(u1, mod1q);
+    v0 = _mm256_max_epu32(u0, mod1q);
+    v1 = _mm256_max_epu32(u1, mod1q);
+
+    v0 = _mm256_cmpeq_epi32(u0, v0);
+    v1 = _mm256_cmpeq_epi32(u1, v1);
 
     v0 = _mm256_and_si256(mod1q, v0);
     v1 = _mm256_and_si256(mod1q, v1);
