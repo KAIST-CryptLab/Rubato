@@ -348,22 +348,29 @@ int main(int argc, char *argv[])
     uint64_t coeffs[XOF_ELEMENT_COUNT];
     alignas(32) uint8_t buf[32];
     XOF* xof = new XOF();
+    int repeat;
 
-    if (argc != 3)
+    if (argc != 2)
     {
-        cout << "Usage : " << argv[0] << " [nonce] [counter]" << endl;
+        cout << "Usage : " << argv[0] << " [repeat]" << endl;
         exit(0);
     }
 
-    nonce = stoull(argv[1]);
-    counter = stoull(argv[2]);
-
+    repeat = stoi(argv[1]);
     xof->init();
-    *(uint64_t *)buf = nonce;
-    *(uint64_t *)(buf + 8) = counter;
-    xof->absorb_once(buf, 16);
-    gen_coeffs(xof, coeffs);
-
-    fwrite(coeffs, sizeof(uint64_t), XOF_ELEMENT_COUNT, stdout);
-    fflush(stdout);
+    for (; repeat > 0; repeat--)
+    {
+        // *(uint64_t *)buf = nonce;
+        // *(uint64_t *)(buf + 8) = counter;
+        if (fread(buf, 1, 16, stdin) != 16)
+        {
+            abort();
+        }
+        xof->absorb_once(buf, 16);
+        gen_coeffs(xof, coeffs);
+        xof->reset();
+        fwrite(coeffs, sizeof(uint64_t), XOF_ELEMENT_COUNT, stdout);
+        fflush(stdout);
+    }
+    free(xof);
 }
