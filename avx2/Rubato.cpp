@@ -365,7 +365,7 @@ extern "C" {
     v5 = _mm256_add_epi32(v5, u2);\
 }
 
-#define MIX64(u0, u1, u2, u3, u4, u5, u6, u7, v0, v1, v2, v3, mod4q, mod2q, mod1q, s, bufs)\
+#define MIX64(u0, u1, u2, u3, u4, u5, u6, u7, v0, v1, v2, v3, mod1q, mod2q, mod4q, s, bufs)\
 {\
     v0 = _mm256_add_epi32(u0, u1);\
     v1 = _mm256_add_epi32(u2, u3);\
