@@ -32,11 +32,6 @@ int main(int argc, char *argv[])
 
 	Rubato cipher(key);
 	cipher.init(nonce, counter);
-	cipher.get_coeffs(coeffs);
-	for (int i = 0; i < XOF_ELEMENT_COUNT; i++)
-		cout << coeffs[i] << " ";
-	cout << endl;
-
 	cipher.crypt(keystream);
 	for (int i = 0; i < OUTPUTSIZE; i++)
 		cout << keystream[i] << " ";

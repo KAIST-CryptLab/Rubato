@@ -41,6 +41,13 @@ gen: gen.cpp util.o parms.h xof_aes.cpp xof_shake.cpp xof_aes.h xof_shake.h
 	$(CXX) $(CXXOPT) xof_shake.cpp $(LIBXKCP) -c -o xof_shake.o
 	$(CXX) $(CXXOPT) gen.o util.o xof_aes.o xof_shake.o $(LIBXKCP) $(LIBOPENSSL) -o gen
 
+main: main.cpp util.o parms.h xof_aes.cpp xof_shake.cpp xof_aes.h xof_shake.h
+	$(CXX) $(CXXOPT) main.cpp -c -o main.o
+	$(CXX) $(CXXOPT) Rubato.cpp -c -o rubato.o
+	$(CXX) $(CXXOPT) xof_aes.cpp $(LIBOPENSSL) -c -o xof_aes.o
+	$(CXX) $(CXXOPT) xof_shake.cpp $(LIBXKCP) -c -o xof_shake.o
+	$(CXX) $(CXXOPT) main.o rubato.o util.o xof_aes.o xof_shake.o $(LIBXKCP) $(LIBOPENSSL) -o main
+
 test: main.cpp util.o Rubato.cpp parms.h xof_aes.cpp xof_shake.cpp
 	$(CXX) $(CXXOPT) test_rubato.cpp -c -o test.o
 	$(CXX) $(CXXOPT) Rubato.cpp -c -o rubato.o
