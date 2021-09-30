@@ -9,9 +9,6 @@ extern "C"
 }
 #include "parms.h"
 
-#define RATE 1344
-#define RATE_IN_BYTE 168
-
 using namespace std;
 
 class Shake
