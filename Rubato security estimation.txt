@@ -1,0 +1,245 @@
+ClearAll;
+(* ind=1,2,3 \[TwoWayRule] Par-S,M,L *)
+ind = 1;
+
+(* ind2=1,...,6 \[TwoWayRule] Par-80S,80M,80L,128S,128M,128L *)
+ind2 = 1;
+
+(* Blocksize according to ind *)
+nList = {16, 36, 64};
+
+(* Output word-length according to ind *)
+mList = {12, 32, 60};
+
+(* Round number *)
+rlist = {2, 2, 2, 5, 3, 2};
+r = rlist[[ind2]];
+
+(* alpha*q according to ind2 *)
+alphaqlist = {11.1, 2.7, 1.6, 10.5, 4.1, 4.1};
+alphaq = alphaqlist[[ind2]];
+
+(* modulus q according to ind2 *)
+qList = {65929217, 33292289, 33292289, 65929217, 33292289, 33292289};
+q = qList[[ind2]];
+
+(* Branch number according to ind *)
+branchNumberList = {8, 12, 16};
+
+(* tau in uSVP attack *)
+tauVal = 1;
+
+(* epsilon in dual attack *)
+eps = 1/23;
+
+(* The number of keystream block for mitm algebraic attack *)
+block = 2;
+var = nList[[ind]] + (nList[[ind]] - mList[[ind]])*block;
+eq = nList[[ind]]*block;
+
+(* List of the number of monomials in r-round Rubato *)
+numOfMonomials = 
+  Table[Sum[Binomial[nList[[i]] + x - 1, x], {x, 0, 2^r}], {i, 1, 3}];
+
+(* The maximal number of monomials of nvar-variable with \[LessEqual] \
+deg-degree *)
+monomials[nvar_, deg_] := Sum[Binomial[nvar + x - 1, x], {x, 0, deg}];
+
+(*The probability of sampling x in discrete Gaussian with zero-mean \
+and alphaq=v *)
+pro[x_, v_] := Exp[-Pi*x^2/v^2]/EllipticTheta[3, Exp[-Pi/v^2]];
+
+(* Summation of pro function from -x to x *)
+prosum[x_, v_] := 
+  Sum[Exp[-Pi*y^2/v^2], {y, -x, x}]/EllipticTheta[3, Exp[-Pi/v^2]];
+
+(* Complexity of linear cryptanalysis *)
+complxLC[modulus_, round_, index_] := 
+  Log2[modulus^(Floor[round/2]*(branchNumberList[[index]] - 2))];
+
+(* Complexity of GCD attack *)
+complxGCD[modulus_, round_, index_] := 
+  Log2[modulus^(nList[[index]] - 1)*round^2*2^round];
+
+(* Complexity of Grobner basis attack *)
+complxGB[round_, aq_, baq_, index_] := 
+  Log2[Binomial[nList[[index]] + 2^round, 
+      nList[[index]]]^2*(2*baq + 1)^
+      nList[[index]]/((prosum[baq, aq])^nList[[index]])];
+
+(* Complexity of Grobner basis attack with meet-in-the-middle attack *)
+complxGBmitm[round_, aq_, baq_, index_] := 
+  Log2[Binomial[var + 2^Ceiling[round/2], var]]*2 + 
+   Log2[(2*baq + 1)/prosum[baq, aq]]*(mList[[index]]*block);
+
+(* Hilbert series for computing degree of semi-regularity *)
+HZ[deg_, nVar_, 
+   nEq_] := (1 - z)^(nEq - nVar)*(Sum[z^i, {i, 0, deg - 1}])^nEq;
+degsemireg[deg_, nVar_, nEq_] := 
+  For[coeffs = CoefficientList[HZ[deg, nVar, nEq], z]; 
+   len = Length[coeffs]; i = 1, i <= len, i++, 
+   If[coeffs[[i]] < 0, Return[i - 1], 
+    If[i == len, Return[1 + (deg*nEq)]]]];
+
+(* Complexity of Grobner basis attack when setting internal variables \
+*)
+complxGBquadratic[round_, aq_, baq_, index_] := 
+  Block[{dreg, resList, res, numBlock, numVar, numEq},
+   resList = {};
+   For[numBlock = 2, numBlock <= 10, numBlock++,
+    numVar = (nList[[index]]*(round - 1))*numBlock + nList[[index]];
+    numEq = ((round - 1)*nList[[index]] + mList[[index]])*numBlock;
+    dreg = degsemireg[2, numVar, numEq];
+    res = 
+     Log2[Binomial[numVar + dreg, dreg]]*2 + 
+      Log2[(2*baq + 1)/prosum[baq, aq]]*(mList[[index]]*numBlock);
+    AppendTo[resList, res];
+    ];
+   Return[Min[resList]]
+   ];
+
+(* Complexity of trivial linearization *)
+complxTL[aq_, baq_, index_] := 
+  2*Log2[numOfMonomials[[index]]] + 
+   Log2[((2*baq + 1)/prosum[baq, aq])]*numOfMonomials[[index]];
+
+(* Complexity of Arora-Ge attack *)
+complxAG[round_, aq_, baq_, index_] := 
+  Log2[Binomial[nList[[index]] + 2^round*(2*baq + 1), 
+      nList[[index]]]^2/(prosum[baq, aq]^nList[[index]])];
+
+(* Complexity of Arora-Ge attack with meet-in-the-middle attack *)
+complxAGmitm[round_, aq_, baq_, index_] := 
+  Log2[Binomial[var + 2^Ceiling[round/2]*(2*baq + 1)^mList[[index]], 
+      var]]*2 - Log2[prosum[baq, aq]]*(mList[[index]]*block);
+
+(* Complexity of BKW attack given by Albrecht et al. *)
+complxBKW[modulus_, aq_, index_] := Block[{a, b},
+   a = -2*Log[aq/modulus];
+   b = numOfMonomials[[index]]/a;
+   Return[
+    Log2[modulus]*b + Log2[a*(a - 1)*numOfMonomials[[index]]/4]]];
+
+(* Log root-Hermite factor estimate in dual attack *)
+logRootHermiteFactor[modulus_, aq_, index_, epsilon_] := 
+  Log2[modulus/aq*Sqrt[Log[1/epsilon]/Pi]]^2/(4* 
+     numOfMonomials[[index]]*Log2[modulus]);
+
+(* Log root-Hermite factor estimate in primal attack *)
+logRootHermiteFactorUSVP[modulus_, aq_, index_, tau_] := 
+  Log2[tau*aq/modulus*Sqrt[E]]^2/(4* numOfMonomials[[index]]*
+     Log2[modulus]);
+
+(* Beta computed by delta using Chen's limit (Primal attack) *)
+deltaToBeta[delta_] := 
+  Floor[beta /. 
+    NSolve[delta == (beta/(2*Pi*E)*(Pi*beta)^(1/beta))^(1/(2*beta - 
+             2)), beta, Reals][[2]][[1]]];
+
+(* Computing proper beta by using the method proposed by Alkim et al. \
+(Primal attack) *)
+betaAlkim[modulus_, aq_, index_] := Module[{m, d, betaList, betaTmp},
+   betaList = {};
+   For[m = 0, m <= 2*numOfMonomials[[index]], 
+    m += (numOfMonomials[[index]]*0.1),
+    d = m + numOfMonomials[[index]] + 1;
+    betaTmp = 
+     beta /. NSolve[
+        Log2[Sqrt[beta/(2*Pi)]*aq] == 
+         Log2[(beta/(2*Pi*E)*(Pi*beta)^(1/beta))]*((2*beta - d - 
+               1)/(2*beta - 2)) + Log2[modulus^(m/d)], beta, Reals][[
+       2]];
+    AppendTo[betaList, betaTmp];
+    ];
+   Return[Min[betaList]]
+   ];
+
+(* Find smaller beta *)
+findBeta[modulus_, aq_, index_, epsilon_, tau_] := 
+  Module[{delta, delta1, delta2, beta, beta1, beta2},
+   delta1 = 2^logRootHermiteFactor[modulus, aq, index, epsilon];
+   delta2 = 2^logRootHermiteFactorUSVP[modulus, aq, index, tau];
+   delta = Max[{delta1, delta2}];
+   beta1 = deltaToBeta[delta];
+   beta2 = betaAlkim[modulus, aq, index];
+   beta = Min[{beta1, beta2}];
+   Return[beta]
+   ];
+
+(* Estimates of the complexity of dual attack by the curve proposed \
+by Albrecht et al. *)
+complxBKZalb[modulus_, aq_, index_, epsilon_] := 
+  0.009/logRootHermiteFactor[modulus, aq, index, epsilon]^2 - 27;
+
+(* Estimates of the complexity of primal attack by the curve proposed \
+by Albrecht et al. *)
+complxBKZalbUSVP[modulus_, aq_, index_, tau_] := 
+  0.009/logRootHermiteFactorUSVP[modulus, aq, index, tau]^2 - 27;
+
+(* Estimates of the complexity of dual attack by the curve proposed \
+by Lindner and Peikert *)
+complxBKZlp[modulus_, aq_, index_, epsilon_] := 
+  1.8/logRootHermiteFactor[modulus, aq, index, epsilon] - 110;
+
+(* Estimates of the complexity of primal attack by the curve proposed \
+by Lindner and Peikert *)
+complxBKZlpUSVP[modulus_, aq_, index_, tau_] := 
+  1.8/logRootHermiteFactorUSVP[modulus, aq, index, tau] - 110;
+
+(* Complexity of enumeration attack with BKZ algorithm *)
+complxBKZenum[beta_] := beta*Log2[beta]/8 + 0.654*beta + 25.84;
+
+(* Complexity of quantum sieve with BKZ algorithm *)
+complxBKZqSieve[beta_] := beta*0.265;
+
+estimate[modulus_, round_, aq_, index_] := 
+  Block[{tGB, tAG, tAGmitm, tlist1, tlist2, tlist3, tlist4, maxVal, 
+    beta},
+   (* Truncation of values which is out of 6 times standard deviation \
+*)
+   maxVal = Ceiling[alphaq*6/Sqrt[2*Pi]];
+   (* Finding most effective t-value for Grobner basis attacks *)
+   tlist1 = Table[(2*x + 1)/prosum[x, aq] // N, {x, 0, maxVal}];
+   tGB = Position[tlist1, Min[tlist1]][[1]][[1]] - 1;
+   (* Finding most effective t-value for Arora-Ge attack *)
+   tlist2 = Table[complxAG[round, aq, x, index] // N, {x, 0, maxVal}];
+   tAG = Position[tlist2, Min[tlist2]][[1]][[1]] - 1;
+   (* Finding most effective t-value for Arora-Ge attack with meet-in-
+   the-middle attack *)
+   tlist3 = 
+    Table[complxAGmitm[round, aq, x, index] // N, {x, 0, maxVal}];
+   tAGmitm = Position[tlist3, Min[tlist3]][[1]][[1]] - 1;
+   
+   Print["Complexity of linear cryptanalysis is ", 
+    complxLC[modulus, round, index] // N, " bits"];
+   Print["Complexity of GCD attack is ", 
+    complxGCD[modulus, round, index] // N, " bits"];
+   Print["Complexity of Grobner basis attack is ", 
+    complxGB[round, aq, tGB, index] // N, " bits"];
+   Print["Complexity of Grobner basis attack with MitM is ", 
+    complxGBmitm[round, aq, tGB, index] // N, " bits"];
+   Print["Complexity of Grobner basis attack with quadratic equations \
+is ", complxGBquadratic[round, aq, tGB, index] // N, " bits"];
+   Print["Complexity of trivial linearization / interpolation attack \
+is ", complxTL[aq, tGB, index] // N, " bits"];
+   Print["Complexity of Arora-Ge attack is ", 
+    complxAG[round, aq, tAG, index] // N, " bits"];
+   Print["Complexity of Arora-Ge attack with MitM is ", 
+    complxAGmitm[round, aq, tAGmitm, index] // N, " bits"];
+   Print["Complexity of BKW attack is ", 
+    complxBKW[modulus, aq, index] // N, " bits"];
+   Print["Complexity bound of SIS-BKZ attack (Albrecht) is ", 
+    complxBKZalb[modulus, aq, index, eps] // N, " bits"];
+   Print["Complexity bound of uSVP attack (Albrecht) is ", 
+    complxBKZalbUSVP[modulus, aq, index, tauVal] // N, " bits"];
+   Print["Complexity bound of SIS-BKZ attack (LP) is ", 
+    complxBKZlp[modulus, aq, index, eps] // N, " bits"];
+   Print["Complexity bound of uSVP attack (LP) is ", 
+    complxBKZlpUSVP[modulus, aq, index, tauVal] // N, " bits"];
+   beta = findBeta[modulus, aq, index, eps, tauVal];
+   Print["Complexity bound of BKZ-enum is ", 
+    complxBKZenum[beta] // N, " bits"];
+   Print["Complexity bound of BKZ-qSieve is ", 
+    complxBKZqSieve[beta] // N, " bits"];
+   ];
+estimate[q, r, alphaq, ind]
