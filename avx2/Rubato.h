@@ -66,7 +66,7 @@ class Rubato
         @param[in] counter Counter, but may be used as an integrated nonce
         */
 		void init(uint64_t nonce, uint64_t counter);
-		void crypt(uint32_t output[BLOCKSIZE]);
+		void crypt(float input[OUTPUTSIZE], uint32_t output[OUTPUTSIZE]);
 
 		// for debug
 		void get_coeffs(uint32_t *output);
@@ -102,9 +102,9 @@ class Rubato
 		void keyschedule_b16();
 		void keyschedule_b36();
 		void keyschedule_b64();
-		void crypt_b16(uint32_t output[OUTPUTSIZE]);
-		void crypt_b36(uint32_t output[OUTPUTSIZE]);
-		void crypt_b64(uint32_t output[OUTPUTSIZE]);
+		void crypt_b16(float input[OUTPUTSIZE], uint32_t output[OUTPUTSIZE]);
+		void crypt_b36(float input[OUTPUTSIZE], uint32_t output[OUTPUTSIZE]);
+		void crypt_b64(float input[OUTPUTSIZE], uint32_t output[OUTPUTSIZE]);
 };
 
 #endif

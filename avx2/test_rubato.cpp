@@ -11,6 +11,7 @@ int main()
 	uint32_t coeffs[XOF_ELEMENT_COUNT];
 	uint32_t round_keys[XOF_ELEMENT_COUNT];
 	uint32_t keystream[OUTPUTSIZE];
+	float zero[OUTPUTSIZE] = {0.0f,};
 
 	for (int i = 0; i < BLOCKSIZE; i++)
 	{
@@ -56,7 +57,7 @@ int main()
 	}
 
 	cout << "Keystream" << hex << endl;
-	cipher.crypt(keystream);
+	cipher.crypt(zero, keystream);
 	cout << hex;
 	for (int i = 0; i < OUTPUTSIZE; i++)
 	{

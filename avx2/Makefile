@@ -1,6 +1,6 @@
 XKCPPATH = XKCP_AVX2
 XKCPHEADERPATH = $(XKCPPATH)/libXKCP.a.headers
-XKCPHEADER = $(XKCPHEADERPATH)/KeccakP-1600-SnP.h
+XKCPHEADER = $(XKCPHEADERPATH)/KeccakHash.h
 
 COPT = -O3 -march=native
 CXXOPT = -O3 -march=native -I$(XKCPHEADERPATH) -std=c++17
@@ -59,4 +59,4 @@ util.o: util.c util.h
 	gcc $(COPT) util.c -c -o util.o
 
 clean:
-	rm -f *.o test main bench_rubato_* result
+	rm -f *.o test main result bench_rubato gen
