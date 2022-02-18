@@ -15,10 +15,10 @@
 #define XOF_SHAKE256 2
 
 #ifndef PARAM_ID
-    #define PARAM_ID PARAM_80_L
+    #define PARAM_ID PARAM_128_L
 #endif
 #ifndef XOF_TYPE
-    #define XOF_TYPE XOF_AES
+    #define XOF_TYPE XOF_SHAKE256
 #endif
 
 alignas(32) static const uint32_t CDF_TABLE_80_S[29*8] = {
@@ -121,14 +121,14 @@ static const uint32_t CDF_TABLE_128_ML[11*8] = {
     #define BLOCKSIZE 16
     #define OUTPUTSIZE 12
     #define ROUNDS 2
-    #define Q 0x7e00001ULL
-    #define Q_BIT_MASK 0x7ffffffULL
+    #define Q 0x3ee0001ULL
+    #define Q_BIT_MASK 0x3ffffffULL
     #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
 
     #define R 0x100000000ULL
-    #define R2_MOD_Q 0x217e39fULL
-    #define Qbar_MOD_R 0x7dfffffULL
-    #define RINV_MOD_Q 0x3e0400ULL
+    #define R2_MOD_Q 0x2b2e03bULL
+    #define Qbar_MOD_R 0x3edffffULL
+    #define RINV_MOD_Q 0xf7144ULL
 
     #define CDF_TABLE_LEN 29
     #define CDF_TABLE CDF_TABLE_80_S
@@ -151,14 +151,14 @@ static const uint32_t CDF_TABLE_128_ML[11*8] = {
     #define BLOCKSIZE 64
     #define OUTPUTSIZE 60
     #define ROUNDS 2
-    #define Q 0xfc0001ULL
-    #define Q_BIT_MASK 0xffffffULL
+    #define Q 0x1fc0001ULL
+    #define Q_BIT_MASK 0x1ffffffULL
     #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
 
     #define R 0x100000000ULL
-    #define R2_MOD_Q 0x3c0421ULL
-    #define Qbar_MOD_R 0xfbffffULL
-    #define RINV_MOD_Q 0xf810ULL
+    #define R2_MOD_Q 0x3038f3ULL
+    #define Qbar_MOD_R 0x1fbffffULL
+    #define RINV_MOD_Q 0x3f010ULL
 
     #define CDF_TABLE_LEN 5
     #define CDF_TABLE CDF_TABLE_80_L
@@ -166,14 +166,14 @@ static const uint32_t CDF_TABLE_128_ML[11*8] = {
     #define BLOCKSIZE 16
     #define OUTPUTSIZE 12
     #define ROUNDS 5
-    #define Q 0x7e00001ULL
-    #define Q_BIT_MASK 0x7ffffffULL
+    #define Q 0x3ee0001ULL
+    #define Q_BIT_MASK 0x3ffffffULL
     #define XOF_ELEMENT_COUNT ((ROUNDS + 1) * BLOCKSIZE)
 
     #define R 0x100000000ULL
-    #define R2_MOD_Q 0x217e39fULL
-    #define Qbar_MOD_R 0x7dfffffULL
-    #define RINV_MOD_Q 0x3e0400ULL
+    #define R2_MOD_Q 0x2b2e03bULL
+    #define Qbar_MOD_R 0x3edffffULL
+    #define RINV_MOD_Q 0xf7144ULL
 
     #define CDF_TABLE_LEN 28
     #define CDF_TABLE CDF_TABLE_128_S

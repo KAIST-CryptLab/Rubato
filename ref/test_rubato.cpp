@@ -6,7 +6,7 @@ using namespace std;
 int main()
 {
 	uint32_t key[BLOCKSIZE];
-	uint64_t nonce = 0x01234566789abcdef;
+	uint64_t nonce = 0x0123456789abcdef;
 	uint64_t counter = 0;
 	uint64_t coeffs[XOF_ELEMENT_COUNT];
 	uint64_t round_keys[XOF_ELEMENT_COUNT];

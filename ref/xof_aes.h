@@ -11,8 +11,6 @@
 
 using namespace std;
 
-#define RATE_IN_BYTE 128
-
 class XoAES
 {
     public:

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 extern "C"
 {
-#include "KeccakP-1600-SnP.h"
+#include "KeccakHash.h"
 }
 #include "parms.h"
 
@@ -20,8 +20,7 @@ class Shake
         void squeeze(uint8_t *out, size_t outlen);
 
     private:
-        alignas(32) uint64_t states_[25];
-        unsigned int pos_;
+        Keccak_HashInstance hash;
 };
 
 #endif
