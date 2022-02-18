@@ -15,7 +15,11 @@ void Shake::init()
 
 void Shake::reset()
 {
+#if XOF_TYPE == XOF_SHAKE256
     Keccak_HashInitialize_SHAKE256(&hash);
+#else
+    Keccak_HashInitialize_SHAKE128(&hash);
+#endif
 }
 
 void Shake::absorb_once(const uint8_t *in, size_t inlen)
