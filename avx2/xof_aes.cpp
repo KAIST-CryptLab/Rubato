@@ -18,7 +18,7 @@ void handleErrors(void)
 void XoAES::init()
 {
     ctx_ = EVP_CIPHER_CTX_new();
-    memset(zero_, 0, RATE_IN_BYTE);
+    memset(zero_, 0, 128);
     pos_ = 0;
 }
 
@@ -38,19 +38,19 @@ void XoAES::absorb_once(const uint8_t *in, size_t inlen)
 
     EVP_EncryptInit_ex(ctx_, EVP_aes_128_ctr(), NULL, in, iv);
     EVP_CIPHER_CTX_set_padding(ctx_, 0);
-    pos_ = RATE_IN_BYTE;
+    pos_ = 128;
 }
 
 void XoAES::squeeze(uint8_t *out, size_t outlen)
 {
     int sz;
     while (outlen) {
-        if (pos_ == RATE_IN_BYTE) {
-            EVP_EncryptUpdate(ctx_, buf_, &sz, zero_, RATE_IN_BYTE);
+        if (pos_ == 128) {
+            EVP_EncryptUpdate(ctx_, buf_, &sz, zero_, 128);
             pos_ = 0;
         }
 
-        unsigned int squeeze_size = MIN(RATE_IN_BYTE - pos_, outlen);
+        unsigned int squeeze_size = MIN(128 - pos_, outlen);
         memcpy(out, buf_+pos_, squeeze_size);
         outlen -= squeeze_size;
         out += squeeze_size;

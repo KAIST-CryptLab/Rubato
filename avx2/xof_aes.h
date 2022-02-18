@@ -21,8 +21,8 @@ class XoAES
 
     private:
         EVP_CIPHER_CTX *ctx_;
-        alignas(32) uint8_t zero_[RATE_IN_BYTE];
-        alignas(32) uint8_t buf_[RATE_IN_BYTE];
+        alignas(32) uint8_t zero_[128];
+        alignas(32) uint8_t buf_[128];
         unsigned int pos_;
 };
 
