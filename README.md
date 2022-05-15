@@ -1,5 +1,5 @@
 # Rubato
-This is an implementation of Rubato cipher
+This is an implementation of [Rubato](https://eprint.iacr.org/2022/537) cipher
 
 ## Contents
 We implement:
